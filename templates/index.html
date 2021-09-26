@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Homepage</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<link rel="stylesheet" href="{{ url_for('static', filename= 'style.css') }}">
+	<link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet" />
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+	<script src="https://kit.fontawesome.com/e43787928d.js" crossorigin="anonymous"></script>
+</head>
+<body class="bg-gray-200">
+	<div class="w-full flex p-4 bg-gray-300 justify-between">
+	  <img src="../static/soict.png" width = 30%/>
+	  <h2 class="heading text-2xl">Blockchain</h2>
+	</div>
+  
+	<div class="pt-6">
+	  <div class="tools">
+		<button
+		  class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
+		  id="mine">
+		  <i class="fas fa-sign-in-alt"></i>
+		  Mine
+		</button>
+		<button
+		  class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
+		  id="chain">
+		  <i class="fas fa-sign-in-alt"></i>
+		  Chain
+		</button>
+		<button type="button" id="transparent" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+		  Transparent
+		</button>
+	  </div>
+	  
+	  <div class="mt-8">
+		<div class="flex justify-around">
+	   <div id="js-view-server" class="justify-center">
+		  <span class="text-2xl">Username: </span> <span id="usr" class=" text-2xl font-bold">{{hashid}}<span>
+		  </span>
+		</div>
+	  </div>
+  
+	  <div class="modal" id="exampleModal" tabindex="-1" role="dialog">
+		<div class="modal-dialog" role="document">
+		  <div class="modal-content">
+			<div class="modal-header">
+			  <h5 class="modal-title">Create ...</h5>
+			  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+			  </button>
+			</div>
+			<div class="modal-body mx-3">
+				<div class="md-form mb-5">
+					<i class="fas fa-user prefix grey-text"></i>
+					<label for="recipient">Recipient</label>
+					<input type="text" id="recipient" class="form-control">
+				  </div>
+		  
+				  <div class="md-form mb-5">
+					<i class="fas fa-envelope prefix grey-text"></i>
+					<label for="amount">Amount</label>
+					<input type="email" id="amount" class="form-control">
+				  </div>
+		  
+				  <div class="md-form">
+					<i class="fas fa-tag prefix grey-text"></i>
+					<label for="content">Content</label>
+					<textarea type="text" id="content" class="md-textarea form-control" rows="4"></textarea>
+				  </div>
+			</div>
+			<div class="modal-footer">
+			  <button type="button" class="btn btn-primary" id="add">Add</button>
+			  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+			</div>
+		  </div>
+		</div>
+	  </div>
+	  
+	  
+	</div>
+	<script src="{{url_for('static', filename='main.js')}}"></script>
+	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  </body>

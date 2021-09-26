@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Register</title>
+<link href="../static/css/style.css" rel='stylesheet' type='text/css' />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="keywords" content="Login , registration, forgot password "./>
+		<link href='http://fonts.googleapis.com/css?family=Cabin:400,500,600,700,400italic,500italic,600italic,700italic' rel='stylesheet' type='text/css'>
+</head>
+<body>
+	<div class="login-02">
+		<div class="two-login  hvr-float-shadow">
+			<div class="two-login-head">
+					<img src="images/top-note.png" alt=""/>
+					<h2>register</h2>
+					<lable></lable>
+			</div>
+			<form method="POST">
+				<li>
+					<input type="text" name = 'fullname' class="text" placeholder="Full Name" ><a class=" icon2 name"></a>
+				</li>
+				<li>
+					<input type="text" name='usr' class="text" placeholder="Username" ><a class=" icon2 user2"></a>
+				</li>
+
+				<li>
+					<input type="password" name='pwd' placeholder="Password"><a class=" icon2 lock2"></a>
+				</li>
+				<li>
+					<input type="password" name='con-pwd' placeholder="Confirm Password"><a class=" icon2 lock2"></a>
+				</li>
+				<div class="p-container">
+					<label><input type="checkbox" name="checkbox" ><i></i>I agree to the <a >Terms of Service</a></label>
+				</div>
+				<div class="submit two">
+						<input type="submit"  value="SIGN UP" >
+				</div>
+				{% if error %}  
+				<p><strong>Error</strong>: {{error}}</p>  
+				{% endif %}  
+					<h5>Already a member ?<a href="/login"> Login Here</a></h5>
+			</form>
+		</div>
+	</div>
+</body>
+</html>
