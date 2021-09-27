@@ -12,9 +12,9 @@
   
     mine.addEventListener("click", async () => {
         var xhttp = new XMLHttpRequest();
-        xhttp.open("get", "http://127.0.0.1:5000/mine", true);
-        xhttp.send("mine");
-
+        xhttp.open("post", "http://127.0.0.1:5000/mine", true);
+        xhttp.send(sender);
+        
         xhttp.onreadystatechange = function() {
             if(this.readyState == 4 && this.status == 200) {
               recvData = JSON.parse(this.responseText);
@@ -43,52 +43,7 @@
             }
         }
     });
-  
-    // transparent.addEventListener("click", async () => {
-      
-    // });
-  
-    // library2.addEventListener("click", async () => {
-    //   var xhttp = new XMLHttpRequest();
-    //   xhttp.open("post", "http://127.0.0.1:5000/mine", true);
-    //   xhttp.send("mine");
-    
-    //   var result = document.getElementById('result');
-  
-    //   while (result.firstChild) {
-    //     result.removeChild(result.lastChild);
-    //   }
-  
-    //   xhttp.onreadystatechange = function() {
-    //     if(this.readyState == 4 && this.status == 200) {
-    //       recvData = this.responseText;
-    //       const recvArr = recvData.split(",");
-    //       for (const element of recvArr) {
-    //         // var node = document.createElement("LI");
-    //         // var textnode = document.createTextNode(element);
-    //         // node.appendChild(textnode);
-    //         // document.getElementById("result").appendChild(node);
-    //         var newDiv = document.createElement("div");
-    //         var newline = document.createElement('br');
-    //         var newlabel = document.createElement('label');
-    //         newlabel.innerHTML = element;
-    //         var newinput = document.createElement('input');
-    //         newinput.className = "abcdef";
-    //         newinput.type = "radio";
-    //         newinput.name = "lib";
-    //         newinput.id = element;
-    //         newinput.value = element;
-    //         newDiv.appendChild(newinput);
-    //         newDiv.appendChild(newlabel);
-    //         newDiv.appendChild(newline);
-    //         document.getElementById("result").appendChild(newDiv);
-    //       }
-    //     } else {
-    //       console.log("error while receiving data");
-    //     }
-    //   }
-    // });
-    
+
     add.addEventListener("click", function (e) {
       
       var obj = {
@@ -117,6 +72,9 @@
     });
   
   })();
+
+
+
   
  
   

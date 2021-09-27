@@ -1,18 +1,16 @@
-from uuid import uuid4
 import json
 import sys
 from blockchain import Blockchain
 from flask import Flask, jsonify, request, render_template, redirect, url_for
 import pymysql
+import hashlib
 
 # MySQL config
 conn = pymysql.connect(host='localhost', port=3306, user='root', passwd='', db='project3')
 
-# Instantiate our Node
+# Initial flask
 app = Flask(__name__)
-
-# Generate a globally unique address for this node
-node_identifier = str(uuid4()).replace('-','')
+checkLogin = False
 
 # Instantiate the Blockchain
 blockchain = Blockchain()
@@ -42,11 +40,13 @@ def signIn():
                 query = "SELECT hashid FROM user WHERE username = %s"
                 cursor.execute(query, _usr)
                 result = cursor.fetchone()
+                conn.commit()
                 return redirect(url_for('index', hashid = result[0]))
             else:
                 error = "Invalid User or Password"  
         except:
             error = "Invalid User or Password" 
+    
     return render_template('LOGIN.html', error = error)
 
 @app.route('/register', methods = ['GET', 'POST'])
@@ -70,31 +70,52 @@ def signUp():
                 if _pwd != _con_pwd:
                     error = 'Password and Re-enter password are not equal'
                 else: 
-                    #Insert in to db
-                    query = 'INSERT INTO user (username, password, hashid, coin) VALUES (%s, %s, %s, 0)'
-                    cursor.execute(query, (_usr, _pwd, _usr))
-                    #Create data for userid
-
-                    checkLogin = True
-
-                    # Get userid
-                    query = "SELECT hashid FROM user WHERE username = %s"
+                    # Check user exist
+                    query = 'SELECT * FROM user where username = %s'
                     cursor.execute(query, _usr)
-                    result = cursor.fetchone()
-                    hashid = result[0]
-                    return redirect(url_for('index', hashid = hashid))
+                    if cursor.fetchone():
+                        error = 'This username has existed'
+                    else:
+                        #Insert in to db
+                        _hashid = hashlib.sha256(str(_usr).encode('utf-8')).hexdigest()
+                        query = 'INSERT INTO user (username, password, hashid, coin) VALUES (%s, %s, %s, 0)'
+                        cursor.execute(query, (_usr, _pwd, _hashid))
+                        conn.commit()
+                        return redirect(url_for('signIn'))
         except Exception as e:
             return jsonify({'error': str(e)})
 
     return render_template('REGISTER.html', error = error)
 
+@app.route('/', methods = ['GET', 'POST'])
+def default():
+    return render_template('default.html')
+
 @app.route('/<hashid>', methods = ['GET', 'POST'])
 def index(hashid):
-    return render_template('index.html', hashid = hashid)
+    if checkLogin == True:
+        # Check hashid existed
+        cursor = conn.cursor()
+        query = 'SELECT * FROM user WHERE hashid = %s'
+        cursor.execute(query, hashid)
+        result = cursor.fetchone()
+        if not bool(result):
+            return 'Not Found', 404
 
-@app.route('/mine', methods=['GET'])
+        # Get coin
+        query = 'SELECT coin FROM user WHERE hashid = %s'
+        cursor.execute(query, hashid)
+        result = cursor.fetchone()
+        return render_template('index.html', hashid = hashid, coin = result[0])
+    else:
+        return redirect(url_for('signIn'))
+
+@app.route('/mine', methods=['GET', 'POST'])
 def mine():
+    # Get hashid data
+    hashid = request.data.decode('ascii')
     # Run proof of work algorithm to get the next proof
+
     last_block = blockchain.last_block
     last_proof = last_block['proof']
     proof = blockchain.proof_of_work(last_proof)
@@ -102,9 +123,10 @@ def mine():
     # We must receive a reward for finding the proof.
     # The sender is '0' to signify that this node has mined a new coin
     blockchain.new_transaction(
-        sender='0',
-        recipient=node_identifier,
-        amount=1,
+        sender = '0',
+        recipient = hashid,
+        amount = 1,
+        content = 'Mined',
     )
 
     # Forge the new Block by adding it to the chain
@@ -117,6 +139,16 @@ def mine():
         'proof': block['proof'],
         'previous_hash': block['previous_hash'],
     }
+    cursor = conn.cursor()
+    query = 'SELECT coin FROM user WHERE hashid = %s'
+    cursor.execute(query, hashid)
+    result = cursor.fetchone()
+    real_amount = result[0]
+    real_amount += 1
+    query = 'UPDATE user SET coin = %s WHERE hashid = %s'
+    cursor.execute(query, (real_amount, hashid))
+    conn.commit()
+
     return jsonify(response), 200
 
 @app.route('/transactions', methods=['POST'])
@@ -126,17 +158,50 @@ def new_transaction():
     jsonvalues = json.loads(values)
     print(jsonvalues)
     # Check that the required fields are in the POST'ed data
-    required = ['sender', 'recipient', 'amount']
+    required = ['sender', 'recipient', 'amount', 'content']
     if not all(k in values for k in required):
         return 'Missing parameters', 400
 
+    # Check in database
+    cursor = conn.cursor()
+    query = 'SELECT * FROM user WHERE hashid = %s'
+    cursor.execute(query, str(jsonvalues['recipient']))
+    result = cursor.fetchone()
+    if not bool(result):
+        return 'Recipient is not exist', 400
+
+    # Check amount
+    query = 'SELECT coin FROM user WHERE hashid = %s'
+    cursor.execute(query, str(jsonvalues['sender']))
+    result = cursor.fetchone()
+    real_amount = result[0]
+    if int(real_amount) < int(jsonvalues['amount']):
+        return 'Your coin is not enough', 400
+
+    # Update coin data
+    real_amount -= int(jsonvalues['amount'])
+    query = 'SELECT coin FROM user WHERE hashid = %s'
+    cursor.execute(query, str(jsonvalues['recipient']))
+    result = cursor.fetchone()
+    recipient_coin = result[0]
+    recipient_coin += int(jsonvalues['amount'])
+    query = 'UPDATE user SET coin = %s WHERE hashid = %s'
+    cursor.execute(query, (real_amount, str(jsonvalues['sender'])))
+    query = 'UPDATE user SET coin = %s WHERE hashid = %s'
+    cursor.execute(query, (recipient_coin, str(jsonvalues['recipient'])))
+
     # Crate a new transaction
-    index = blockchain.new_transaction(jsonvalues['sender'], jsonvalues['recipient'], jsonvalues['amount'])
+    index = blockchain.new_transaction(jsonvalues['sender'], jsonvalues['recipient'], jsonvalues['amount'], jsonvalues['content'])
 
     response = {
         'message': f'Transaction will be added to Block {index}',
     }
-   
+
+    # Update transaction to database
+    query = 'INSERT INTO contract (sender, recipient, amount, content) VALUES (%s, %s, %s, %s)'
+    cursor.execute(query, (str(jsonvalues['sender']), str(jsonvalues['recipient']), str(jsonvalues['amount']), str(jsonvalues['content'])))
+    conn.commit()
+
     return jsonify(response), 200
 
 
@@ -164,7 +229,7 @@ def register_nodes():
         'message': 'New nodes have been added',
         'total_nodes': list(blockchain.nodes),
     }
-    return jsonify(response), 201
+    return jsonify(response), 200
 
 
 @app.route('/nodes/resolve', methods=['GET'])

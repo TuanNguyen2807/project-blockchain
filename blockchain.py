@@ -47,7 +47,7 @@ class Blockchain(object):
 
         return block
 
-    def new_transaction(self, sender, recipient, amount):
+    def new_transaction(self, sender, recipient, amount, content):
         """
         Creates a new transaction to go into the next mined Block
 
@@ -61,6 +61,7 @@ class Blockchain(object):
             'sender': sender,
             'recipient': recipient,
             'amount': amount,
+            'content': content,
         })
 
         return self.last_block['index'] + 1
@@ -171,6 +172,3 @@ class Blockchain(object):
             self.chain = new_chain
             return True
         return False
-
-
-
